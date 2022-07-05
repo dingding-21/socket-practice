@@ -1,5 +1,5 @@
 import http from 'http';
-import WebSocket from 'ws';
+import SocketIO from 'socket.io';
 import express from 'express';
 
 const app = express();
@@ -10,12 +10,16 @@ app.use('/public', express.static(__dirname + '/public'));
 app.get('/', (_, res) => res.render('home'));
 app.get('/*', (_, res) => res.redirect('/'));
 
-const handleListen = () => console.log(`Listening on http://localhost:3000`);
-
 // 같은 서버에서 http, webSocket 둘 다 작동시킴
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+const httpServer = http.createServer(app);
+const wsServer = SocketIO(httpServer);
 
+wsServer.on('connection', (socket) => {
+  console.log(socket);
+});
+
+/*
+const wss = new WebSocket.Server({ httpServer });
 const sockets = [];
 
 // connection이 생기면 socket을 받는다
@@ -41,5 +45,7 @@ wss.on('connection', (socket) => {
     }
   });
 });
+*/
 
-server.listen(3000, handleListen);
+const handleListen = () => console.log(`Listening on http://localhost:3000`);
+httpServer.listen(3000, handleListen);
