@@ -23,7 +23,13 @@ wsServer.on('connection', (socket) => {
     done();
     socket.to(roomName).emit('welcome');
   });
+
+  // 클라이언트가 서버와 연결이 끊어지기 전
+  socket.on('disconnecting', () => {
+    socket.rooms.forEach((room) => {
+      socket.to(room).emit('bye');
 });
+  });
 
 /*
 const wss = new WebSocket.Server({ httpServer });
