@@ -14,6 +14,7 @@ const httpServer = http.createServer(app);
 const wsServer = SocketIO(httpServer);
 
 wsServer.on('connection', (socket) => {
+  socket['nickname'] = 'Anon';
   // socket에 있는 모든 event 보기
   socket.onAny((event) => {
     console.log(`Socket Event: ${event}`);
@@ -21,20 +22,22 @@ wsServer.on('connection', (socket) => {
   socket.on('enter_room', (roomName, done) => {
     socket.join(roomName);
     done();
-    socket.to(roomName).emit('welcome');
+    socket.to(roomName).emit('welcome', socket.nickname);
   });
 
   // 클라이언트가 서버와 연결이 끊어지기 전
   socket.on('disconnecting', () => {
     socket.rooms.forEach((room) => {
-      socket.to(room).emit('bye');
+      socket.to(room).emit('bye', socket.nickname);
     });
   });
 
   socket.on('new_message', (msg, room, done) => {
-    socket.to(room).emit('new_message', msg);
+    socket.to(room).emit('new_message', `${socket.nickname}: ${msg}`);
     done();
-    console.log('msg', msg);
+  });
+  socket.on('nickname', (nickname) => {
+    socket['nickname'] = nickname;
   });
 });
 
